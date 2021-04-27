@@ -1,2 +1,7 @@
 # SecuringAspNetCore3WithOAuth2AndOIDCWebAppAndApi
-SecuringAspNetCore3WithOAuth2AndOIDC(WebAppAndApi)
+
+Client
+
+Web Api
+
+File Upload(Image from harddisk)
