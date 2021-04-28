@@ -1,8 +1,14 @@
 ﻿using ImageGallery.Client.ViewModels;
 using ImageGallery.Model;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -12,6 +18,7 @@ using System.Threading.Tasks;
 
 namespace ImageGallery.Client.Controllers
 {
+    [Authorize]
     public class GalleryController : Controller
     {
         private readonly IHttpClientFactory httpClientFacotry;
@@ -22,6 +29,8 @@ namespace ImageGallery.Client.Controllers
         }
         public async Task<IActionResult> Index()
         {
+            await WriteOurIdentityInformation();
+
             var httpClient = httpClientFacotry.CreateClient("ApiClient");
             
             var request = new HttpRequestMessage
@@ -178,6 +187,23 @@ namespace ImageGallery.Client.Controllers
             response.EnsureSuccessStatusCode();
 
             return RedirectToAction("Index");
+        }
+        public async Task WriteOurIdentityInformation()
+        {
+            var identityToken = await HttpContext
+                .GetTokenAsync(OpenIdConnectParameterNames.IdToken);
+
+            Debug.Write($"Identity Token: {identityToken}");
+
+            foreach(var claim in User.Claims)
+            {
+                Debug.Write($"Claim Type: {claim.Type} - Claim value {claim.Value}");
+            }
+        }
+        public async Task Logout()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            await HttpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
         }
     }
 }
